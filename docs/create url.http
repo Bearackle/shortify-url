@@ -1,0 +1,13 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+###
+
+POST http://localhost:8080/url
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=TdrL3QxjyVw&list=RD7A3Kln9e6-s&index=13"
+}
+

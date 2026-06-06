@@ -1,0 +1,144 @@
+
+<div id="erd" style="padding:8px 0"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#000000' : '#000000',
+  },
+});
+const diagram = `erDiagram
+  users {
+    bigint id PK
+    varchar email
+    text password_hash
+    varchar display_name
+    varchar plan_type
+    boolean is_active
+    timestamp created_at
+    timestamp updated_at
+  }
+  api_keys {
+    bigint id PK
+    bigint user_id FK
+    varchar key_hash
+    varchar name
+    bigint rate_limit_per_hour
+    timestamp expires_at
+    timestamp last_used_at
+    timestamp created_at
+  }
+  short_urls {
+    bigint id PK
+    varchar short_code
+    text original_url
+    bigint user_id FK
+    bigint folder_id FK
+    varchar title
+    text preview_title
+    text preview_image
+    boolean custom_alias
+    boolean is_active
+    boolean password_protected
+    varchar password_hash
+    bigint click_count
+    timestamp created_at
+    timestamp updated_at
+    timestamp expires_at
+  }
+  url_tags {
+    bigint id PK
+    bigint short_url_id FK
+    bigint tag_id FK
+  }
+  tags {
+    bigint id PK
+    bigint user_id FK
+    varchar name
+    varchar color
+  }
+  folders {
+    bigint id PK
+    bigint user_id FK
+    varchar name
+    timestamp created_at
+  }
+  click_events {
+    bigint id PK
+    timestamp clicked_at PK
+    bigint short_url_id FK
+    inet ip_address
+    text user_agent
+    text referer
+    varchar country_code
+    varchar city
+    varchar device_type
+    varchar browser
+    varchar os
+  }
+  daily_stats {
+    bigint short_url_id FK
+    date stat_date
+    bigint click_count
+    bigint unique_visitors
+  }
+  reserved_aliases {
+    varchar alias PK
+    varchar reason
+  }
+  blocked_domains {
+    varchar domain PK
+    text reason
+    timestamp created_at
+  }
+  rate_limit_counters {
+    varchar key PK
+    bigint count
+    timestamp window_start
+    timestamp expires_at
+  }
+
+  users ||--o{ short_urls : owns
+  users ||--o{ api_keys : has
+  users ||--o{ tags : creates
+  users ||--o{ folders : owns
+  short_urls ||--o{ click_events : receives
+  short_urls ||--o{ url_tags : tagged_with
+  short_urls ||--o{ daily_stats : aggregates
+  short_urls }o--|| folders : belongs_to
+  tags ||--o{ url_tags : applied_to
+`;
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+document.querySelectorAll('#erd svg.erDiagram .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+document.querySelectorAll('#erd svg.erDiagram .row-rect-odd path, #erd svg.erDiagram .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
