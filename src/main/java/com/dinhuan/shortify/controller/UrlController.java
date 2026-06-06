@@ -2,7 +2,6 @@ package com.dinhuan.shortify.controller;
 
 import com.dinhuan.shortify.dto.shorturl.LongUrl;
 import com.dinhuan.shortify.service.ShortUrlService;
-import com.dinhuan.shortify.service.impl.ShortUrlServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
